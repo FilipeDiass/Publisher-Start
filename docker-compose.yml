@@ -1,0 +1,18 @@
+services:
+  db:
+    image: postgres:17.2-bullseye
+    container_name: publisher-start
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: publisher-start
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./src/main/resources/db/init-scripts:/docker-entrypoint-initdb.d
+
+volumes:
+  db_data:
+    name: publisher-start
+
