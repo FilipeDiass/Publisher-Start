@@ -1,7 +1,9 @@
 package com.filipediass.publisherstart.controller;
 
 import com.filipediass.publisherstart.dto.PublishersDTO;
+import com.filipediass.publisherstart.model.Countries;
 import com.filipediass.publisherstart.model.Publishers;
+import com.filipediass.publisherstart.service.CountriesService;
 import com.filipediass.publisherstart.service.PublishersService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +20,7 @@ import java.util.UUID;
 public class PublishersController {
 
     private final PublishersService publishersService;
+    private final CountriesService countriesService;
 
     @GetMapping("/{id}")
     public ResponseEntity<PublishersDTO> findPublishers (@PathVariable String id) {
@@ -29,7 +32,14 @@ public class PublishersController {
 
     @PostMapping
     public ResponseEntity<Void> savePublishers (@RequestBody PublishersDTO publishersDTO) {
+        Countries countries = null;
+        if (publishersDTO.country() != null && !publishersDTO.country().isEmpty()) {
+            countries = countriesService.findByCode(publishersDTO.country());
+        }
+
         Publishers publishers = publishersDTO.toEntity();
+        publishers.setCountry(countries);
+
         publishersService.save(publishers);
 
         URI uri = ServletUriComponentsBuilder
@@ -53,11 +63,16 @@ public class PublishersController {
     public ResponseEntity<PublishersDTO> updatePublishers (
             @PathVariable String id,
             @RequestBody PublishersDTO publishersDTO) {
+        Countries countries = null;
+        if (publishersDTO.country() != null && !publishersDTO.country().isEmpty()) {
+            countries = countriesService.findByCode(publishersDTO.country());
+        }
+
         Publishers publishers = publishersService.findById(UUID.fromString(id));
 
         publishers.setName(publishersDTO.name());
         publishers.setEmail(publishersDTO.email());
-        publishers.setCountry(publishers.getCountry());
+        publishers.setCountry(countries);
         publishers.setRevenue(publishersDTO.revenue());
         publishers.setFoundedDate(publishersDTO.foundedDate());
         publishers.setActive(publishersDTO.active());
